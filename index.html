@@ -393,7 +393,7 @@
 
   <!-- VIDEO REEL -->
   <div class="reel-wrap" id="reelWrap">
-    <video id="reelVideo" src="derek-reel.mp4" muted playsinline preload="auto"></video>
+    <video id="reelVideo" src="derek-reel.mp4" muted playsinline webkit-playsinline autoplay preload="auto"></video>
   </div>
 
   <!-- HERO TEXT -->
@@ -473,6 +473,31 @@
   const TOTAL_FRAMES = 97;
   const FPS = 24;
   reel.pause();
+
+  // Many mobile browsers (iOS Safari, Chrome for Android) never decode or
+  // paint a single frame from a <video> until playback has actually
+  // started — setting currentTime alone leaves it blank/black. Priming
+  // with a play() immediately followed by pause() forces that first
+  // decode. Muted + playsinline videos are allowed to autoplay without a
+  // user gesture, but we also retry on the first touch/click as a
+  // fallback for stricter browsers.
+  let primed = false;
+  function primeReel(){
+    if(primed) return;
+    const p = reel.play();
+    if(p && typeof p.then === 'function'){
+      p.then(()=>{
+        primed = true;
+        reel.pause();
+        scrubToFrame(1);
+      }).catch(()=>{ /* will retry on first user gesture */ });
+    }
+  }
+  if(reel.readyState >= 2){ primeReel(); }
+  else { reel.addEventListener('loadeddata', primeReel, { once:true }); }
+  ['touchstart','click'].forEach((evt)=>{
+    document.addEventListener(evt, primeReel, { once:true, passive:true });
+  });
 
   // The hand-tracking loop can call this many times per second. Firing a
   // new currentTime assignment while the previous seek is still in flight
