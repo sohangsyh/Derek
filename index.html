@@ -447,11 +447,42 @@
   const FPS = 24;
   reel.pause();
 
+  // The hand-tracking loop can call this many times per second. Firing a
+  // new currentTime assignment while the previous seek is still in flight
+  // makes some browsers abort the pending seek before it ever paints a
+  // frame, so the video looks frozen. We only ever have one seek in
+  // flight, and always jump straight to the most recently requested frame
+  // once it completes.
+  let seekInFlight = false;
+  let pendingTime = null;
+
+  reel.addEventListener('seeked', ()=>{
+    seekInFlight = false;
+    if(pendingTime !== null){
+      const t = pendingTime;
+      pendingTime = null;
+      applySeek(t);
+    }
+  });
+
+  function applySeek(time){
+    seekInFlight = true;
+    reel.currentTime = time;
+  }
+
   function scrubToFrame(frameFloat){
     const frame = Math.max(1, Math.min(TOTAL_FRAMES, frameFloat));
     const time = Math.min((frame - 1) / FPS, reel.duration ? reel.duration - 0.001 : Infinity);
-    const setIt = ()=>{ reel.currentTime = time; };
+
+    const setIt = ()=>{
+      if(seekInFlight){
+        pendingTime = time;
+      } else {
+        applySeek(time);
+      }
+    };
     if(reel.readyState >= 1){ setIt(); } else { reel.addEventListener('loadedmetadata', setIt, { once:true }); }
+
     const rounded = Math.round(frame);
     setStatus(`Frame ${rounded} / ${TOTAL_FRAMES}`, rounded > TOTAL_FRAMES/2 ? 'paused' : 'playing');
   }
@@ -645,6 +676,14 @@
   }
 
   async function initHandTracking(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      hintEl.style.display = 'flex';
+      hintEl.textContent = window.isSecureContext
+        ? 'Camera API unavailable in this browser.'
+        : 'Camera access needs a secure page. Open this file through a local server (e.g. run "python3 -m http.server" in this folder and visit http://localhost:8000) instead of double-clicking it — Chrome blocks the camera on file:// pages.';
+      setStatus('No camera');
+      return;
+    }
     try{
       const stream = await navigator.mediaDevices.getUserMedia({ video:{ width:640, height:480 }, audio:false });
       webcamEl.srcObject = stream;
