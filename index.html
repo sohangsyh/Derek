@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Derek — Design & Creative Direction</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,500;1,600&display=swap');
+
+  :root{
+    --black:#000;
+    --white:#fff;
+    --dim:rgba(255,255,255,0.55);
+    --line:rgba(255,255,255,0.14);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .stage{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    background:#000;
+  }
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:absolute;
+    top:0; left:0; right:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px 48px;
+    z-index:50;
+  }
+
+  .logo{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+
+  .nav-links{
+    display:flex;
+    gap:36px;
+    list-style:none;
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+  }
+
+  .nav-links a{
+    color:var(--white);
+    text-decoration:none;
+    font-size:14px;
+    font-weight:500;
+    opacity:0.85;
+    transition:opacity 0.2s ease;
+  }
+  .nav-links a:hover{ opacity:1; }
+
+  .nav-buttons{
+    display:flex;
+    gap:12px;
+  }
+
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:11px 20px;
+    border-radius:999px;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--white);
+    white-space:nowrap;
+    transition:all 0.2s ease;
+  }
+  .btn:hover{ border-color:rgba(255,255,255,0.4); }
+
+  .btn-fill{
+    background:var(--white);
+    color:#000;
+    border:1px solid var(--white);
+  }
+  .btn-fill:hover{ background:rgba(255,255,255,0.85); }
+
+  /* ---------- HERO TEXT ---------- */
+  .hero-left{
+    position:absolute;
+    top:130px;
+    left:48px;
+    max-width:640px;
+    z-index:20;
+  }
+
+  .tagline{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.5px;
+    color:var(--dim);
+    margin-bottom:26px;
+    text-transform:uppercase;
+  }
+
+  .diamond{
+    width:8px;
+    height:8px;
+    background:var(--white);
+    transform:rotate(45deg);
+    flex-shrink:0;
+  }
+
+  .tagline em{
+    font-style:italic;
+    color:var(--white);
+  }
+
+  h1{
+    font-size:64px;
+    line-height:1.08;
+    font-weight:600;
+    letter-spacing:-1.5px;
+  }
+
+  h1 .serif-line{
+    display:block;
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:70px;
+    letter-spacing:0;
+  }
+
+  /* ---------- VIDEO REEL ---------- */
+  .reel-wrap{
+    position:absolute;
+    top:0;
+    left:44%;
+    width:56%;
+    height:100%;
+    overflow:hidden;
+    transition:left 0.12s ease-out;
+    will-change:left;
+  }
+
+  .reel-wrap::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 22%, rgba(0,0,0,0) 45%);
+    pointer-events:none;
+  }
+
+  .reel-wrap video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transform:scaleX(-1);
+    display:block;
+    filter:grayscale(15%) contrast(1.05);
+  }
+
+  /* ---------- FLOATING CAMERA WINDOW ---------- */
+  .cam-wrap{
+    position:absolute;
+    bottom:40px;
+    left:40px;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    z-index:100;
+  }
+
+  .cam-arrow{
+    width:38px;
+    height:38px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px solid rgba(255,255,255,0.28);
+    border-radius:50%;
+    background:transparent;
+    color:rgba(255,255,255,0.35);
+    font-size:16px;
+    line-height:1;
+    transition:border-color 0.15s ease, color 0.15s ease;
+  }
+  .cam-arrow.active-left{ border-color:#ff4d4d; color:#ff4d4d; }
+  .cam-arrow.active-right{ border-color:#ff4d4d; color:#ff4d4d; }
+
+  .cam-window{
+    position:relative;
+    width:260px;
+    height:210px;
+    min-width:160px;
+    min-height:150px;
+    background:#0a0a0a;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    resize:both;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .cam-gestures{
+    flex-shrink:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    padding:6px 0;
+    background:rgba(255,255,255,0.03);
+    border-bottom:1px solid var(--line);
+  }
+
+  .gesture-icon{
+    width:26px;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px solid rgba(255,255,255,0.28);
+    border-radius:50%;
+    color:rgba(255,255,255,0.4);
+    font-size:13px;
+    line-height:1;
+    transition:border-color 0.15s ease, color 0.15s ease;
+  }
+  .gesture-icon.active{ border-color:#ff4d4d; color:#ff4d4d; }
+
+  .cam-header{
+    height:28px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    background:rgba(255,255,255,0.04);
+    border-bottom:1px solid var(--line);
+    user-select:none;
+  }
+
+  .cam-title{
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.5px;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+
+  .cam-status{
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.1);
+    color:var(--dim);
+  }
+  .cam-status.playing{ background:rgba(120,255,150,0.15); color:#8fffa8; }
+  .cam-status.paused{ background:rgba(255,120,120,0.15); color:#ff9a9a; }
+
+  .cam-body{
+    position:relative;
+    width:100%;
+    flex:1 1 auto;
+    min-height:0;
+    background:#050505;
+  }
+
+  .cam-body video{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transform:scaleX(-1);
+    opacity:0.9;
+  }
+
+  .cam-body canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+
+  .cam-hint{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:11px;
+    color:var(--dim);
+    padding:16px;
+    z-index:5;
+    pointer-events:none;
+  }
+
+  .cam-resize-handle{
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    width:14px;
+    height:14px;
+    cursor:nwse-resize;
+    z-index:10;
+  }
+  .cam-resize-handle::before{
+    content:"";
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    width:8px;
+    height:8px;
+    border-right:2px solid rgba(255,255,255,0.35);
+    border-bottom:2px solid rgba(255,255,255,0.35);
+  }
+
+  @media (max-width:900px){
+    h1{ font-size:38px; }
+    h1 .serif-line{ font-size:42px; }
+    .nav-links{ display:none; }
+    .reel-wrap{ width:100%; opacity:0.35; }
+    .hero-left{ top:110px; max-width:90%; }
+    .cam-wrap{ bottom:16px; left:16px; gap:10px; }
+    .cam-window{ width:170px; height:140px; }
+    .cam-arrow{ width:28px; height:28px; font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="logo">Derek</div>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- VIDEO REEL -->
+  <div class="reel-wrap" id="reelWrap">
+    <video id="reelVideo" src="derek-reel.mp4" muted playsinline preload="auto"></video>
+  </div>
+
+  <!-- HERO TEXT -->
+  <div class="hero-left">
+    <h1>
+      <span class="serif-line">Say hello to me.</span>
+    </h1>
+  </div>
+
+  <!-- FLOATING CAMERA WINDOW -->
+  <div class="cam-wrap" id="camWrap">
+    <div class="cam-arrow" id="arrowLeft">&#8592;</div>
+    <div class="cam-window" id="camWindow">
+      <div class="cam-gestures">
+        <div class="gesture-icon" id="gestureOpen" title="Open hand">&#9995;</div>
+        <div class="gesture-icon" id="gestureFist" title="Closed fist">&#9994;</div>
+      </div>
+      <div class="cam-header" id="camHeader">
+        <span class="cam-title">Live Cam</span>
+        <span class="cam-status" id="camStatus">Waiting</span>
+      </div>
+      <div class="cam-body">
+        <div class="cam-hint" id="camHint">Enable your camera. Open your hand for frame 1, close it into a fist to scrub through to frame 97. Move your hand left or right to slide the reel.</div>
+        <video id="webcam" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <div class="cam-resize-handle" id="camResize"></div>
+    </div>
+    <div class="cam-arrow" id="arrowRight">&#8594;</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+(function(){
+  /* ---------------- Fixed camera window (resizable only) ---------------- */
+  const camWindow = document.getElementById('camWindow');
+  const camResize = document.getElementById('camResize');
+
+  (function makeResizable(){
+    let resizing=false, startX=0, startY=0, startW=0, startH=0;
+    camResize.addEventListener('mousedown',(e)=>{
+      resizing=true;
+      startX=e.clientX; startY=e.clientY;
+      startW=camWindow.offsetWidth; startH=camWindow.offsetHeight;
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    window.addEventListener('mousemove',(e)=>{
+      if(!resizing) return;
+      const newW = Math.max(160, startW + (e.clientX - startX));
+      const newH = Math.max(130, startH + (e.clientY - startY));
+      camWindow.style.width = newW+'px';
+      camWindow.style.height = newH+'px';
+    });
+    window.addEventListener('mouseup', ()=>{ resizing=false; });
+  })();
+
+  /* ---------------- Reel + status ---------------- */
+  const reel = document.getElementById('reelVideo');
+  const statusEl = document.getElementById('camStatus');
+  const hintEl = document.getElementById('camHint');
+
+  function setStatus(text, cls){
+    statusEl.textContent = text;
+    statusEl.className = 'cam-status' + (cls ? ' '+cls : '');
+  }
+
+  // Video never plays on its own — it's a 97-frame (24fps) scrub strip
+  // driven directly by how open or closed the tracked hand is.
+  // Fully open hand -> frame 1 (start). Fully closed fist -> frame 97 (end).
+  // Anything in between scrubs proportionally, so opening/closing the
+  // hand plays the clip forward or in reverse like a film reel.
+  const TOTAL_FRAMES = 97;
+  const FPS = 24;
+  reel.pause();
+
+  function scrubToFrame(frameFloat){
+    const frame = Math.max(1, Math.min(TOTAL_FRAMES, frameFloat));
+    const time = Math.min((frame - 1) / FPS, reel.duration ? reel.duration - 0.001 : Infinity);
+    const setIt = ()=>{ reel.currentTime = time; };
+    if(reel.readyState >= 1){ setIt(); } else { reel.addEventListener('loadedmetadata', setIt, { once:true }); }
+    const rounded = Math.round(frame);
+    setStatus(`Frame ${rounded} / ${TOTAL_FRAMES}`, rounded > TOTAL_FRAMES/2 ? 'paused' : 'playing');
+  }
+
+  function scrubToOpenness(openness){
+    // openness: 1 = fully open hand (frame 1), 0 = closed fist (frame 97)
+    const frame = 1 + (1 - openness) * (TOTAL_FRAMES - 1);
+    scrubToFrame(frame);
+  }
+
+  /* ---------------- Gesture icons (open hand / fist) ---------------- */
+  const gestureOpenEl = document.getElementById('gestureOpen');
+  const gestureFistEl = document.getElementById('gestureFist');
+  const GESTURE_OPEN_THRESHOLD = 0.6;
+  const GESTURE_FIST_THRESHOLD = 0.4;
+
+  function updateGestureIcons(openness){
+    if(openness >= GESTURE_OPEN_THRESHOLD){
+      gestureOpenEl.classList.add('active');
+      gestureFistEl.classList.remove('active');
+    } else if(openness <= GESTURE_FIST_THRESHOLD){
+      gestureFistEl.classList.add('active');
+      gestureOpenEl.classList.remove('active');
+    } else {
+      gestureOpenEl.classList.remove('active');
+      gestureFistEl.classList.remove('active');
+    }
+  }
+
+  function clearGestureIcons(){
+    gestureOpenEl.classList.remove('active');
+    gestureFistEl.classList.remove('active');
+  }
+
+  /* ---------------- Hand left/right -> reel slides left/right ---------------- */
+  const reelWrap = document.getElementById('reelWrap');
+
+  // Amplify sensitivity: a hand only travels through a modest slice of the
+  // webcam frame in practice, so we take a narrower input band and stretch
+  // it across the full allowed travel range — small side-to-side motion
+  // now swings the reel all the way across.
+  const HAND_X_MIN = 0.30;
+  const HAND_X_MAX = 0.70;
+
+  function moveReelToHandX(handX){
+    // handX: 0 = left edge of frame, 1 = right edge of frame (already mirror-corrected)
+    const amplified = (handX - HAND_X_MIN) / (HAND_X_MAX - HAND_X_MIN);
+    const normalized = Math.max(0, Math.min(1, amplified));
+
+    const pageWidth = window.innerWidth;
+    const reelWidth = reelWrap.offsetWidth;
+
+    // Border 1: never cross the right edge of the page.
+    const maxLeft = pageWidth - reelWidth;
+    // Border 2: never extend past the left third of the page.
+    const minLeft = pageWidth / 3;
+
+    if(minLeft > maxLeft){
+      // window too narrow for the constraint to be satisfiable — just clamp to viewport
+      reelWrap.style.left = Math.max(0, maxLeft) + 'px';
+      return;
+    }
+
+    const targetLeft = minLeft + normalized * (maxLeft - minLeft);
+    const clamped = Math.max(minLeft, Math.min(maxLeft, targetLeft));
+    reelWrap.style.left = clamped + 'px';
+  }
+
+  /* ---------------- Direction arrows ---------------- */
+  const arrowLeftEl = document.getElementById('arrowLeft');
+  const arrowRightEl = document.getElementById('arrowRight');
+  let lastHandX = null;
+  let arrowResetTimer = null;
+  const DIRECTION_THRESHOLD = 0.006;
+
+  function updateDirectionArrows(handX){
+    if(lastHandX !== null){
+      const delta = handX - lastHandX;
+      if(delta < -DIRECTION_THRESHOLD){
+        arrowLeftEl.classList.add('active-left');
+        arrowRightEl.classList.remove('active-right');
+        armArrowReset();
+      } else if(delta > DIRECTION_THRESHOLD){
+        arrowRightEl.classList.add('active-right');
+        arrowLeftEl.classList.remove('active-left');
+        armArrowReset();
+      }
+    }
+    lastHandX = handX;
+  }
+
+  function armArrowReset(){
+    clearTimeout(arrowResetTimer);
+    arrowResetTimer = setTimeout(clearDirectionArrows, 220);
+  }
+
+  function clearDirectionArrows(){
+    arrowLeftEl.classList.remove('active-left');
+    arrowRightEl.classList.remove('active-right');
+  }
+
+  /* ---------------- Hand tracking ---------------- */
+  const webcamEl = document.getElementById('webcam');
+  const overlay = document.getElementById('overlay');
+  const ctx = overlay.getContext('2d');
+
+  function resizeCanvas(){
+    overlay.width = overlay.clientWidth;
+    overlay.height = overlay.clientHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  // Continuous 0..1 "openness" score instead of a binary open/closed
+  // classification, so the video can scrub smoothly between frames as
+  // the hand opens and closes rather than jumping straight to an end.
+  const CLOSED_RATIO = 1.05; // avg fingertip/wrist distance ratio when fist is closed
+  const OPEN_RATIO = 1.95;   // avg fingertip/wrist distance ratio when hand is fully open
+
+  function getOpenness(landmarks){
+    const wrist = landmarks[0];
+    const middleMcp = landmarks[9];
+    const handSize = Math.hypot(middleMcp.x-wrist.x, middleMcp.y-wrist.y) || 0.0001;
+
+    const tips = [8,12,16,20]; // index, middle, ring, pinky tips
+    let avgRatio = 0;
+    tips.forEach((tipIdx)=>{
+      const tip = landmarks[tipIdx];
+      const dist = Math.hypot(tip.x-wrist.x, tip.y-wrist.y);
+      avgRatio += dist / handSize;
+    });
+    avgRatio /= tips.length;
+
+    const t = (avgRatio - CLOSED_RATIO) / (OPEN_RATIO - CLOSED_RATIO);
+    return Math.max(0, Math.min(1, t));
+  }
+
+  const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17]
+  ];
+
+  function onResults(results){
+    resizeCanvas();
+    ctx.save();
+    ctx.clearRect(0,0,overlay.width, overlay.height);
+
+    if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0){
+      hintEl.style.display = 'none';
+      const landmarks = results.multiHandLandmarks[0];
+
+      // draw skeleton (mirrored to match mirrored video)
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      HAND_CONNECTIONS.forEach(([a,b])=>{
+        const pa = landmarks[a], pb = landmarks[b];
+        ctx.beginPath();
+        ctx.moveTo((1-pa.x)*overlay.width, pa.y*overlay.height);
+        ctx.lineTo((1-pb.x)*overlay.width, pb.y*overlay.height);
+        ctx.stroke();
+      });
+      ctx.fillStyle = '#ffffff';
+      landmarks.forEach((p)=>{
+        ctx.beginPath();
+        ctx.arc((1-p.x)*overlay.width, p.y*overlay.height, 2.5, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      const openness = getOpenness(landmarks);
+      scrubToOpenness(openness);
+      updateGestureIcons(openness);
+
+      // Hand x-position (mirror-corrected, same as the skeleton draw above)
+      // slides the reel left/right within its allowed border.
+      const wrist = landmarks[0];
+      const handX = 1 - wrist.x;
+      moveReelToHandX(handX);
+      updateDirectionArrows(handX);
+    } else {
+      // No hand detected — the video always defaults back to frame 1,
+      // and the direction arrows go neutral.
+      scrubToFrame(1);
+      lastHandX = null;
+      clearDirectionArrows();
+      clearGestureIcons();
+    }
+    ctx.restore();
+  }
+
+  async function initHandTracking(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{ width:640, height:480 }, audio:false });
+      webcamEl.srcObject = stream;
+      await webcamEl.play();
+      resizeCanvas();
+
+      if(typeof Hands === 'undefined'){
+        hintEl.textContent = 'Camera on — hand-tracking library failed to load.';
+        return;
+      }
+
+      const hands = new Hands({
+        locateFile: (file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+      });
+      hands.setOptions({
+        maxNumHands:1,
+        modelComplexity:1,
+        minDetectionConfidence:0.6,
+        minTrackingConfidence:0.6
+      });
+      hands.onResults(onResults);
+
+      async function frameLoop(){
+        if(webcamEl.readyState >= 2){
+          await hands.send({ image: webcamEl });
+        }
+        requestAnimationFrame(frameLoop);
+      }
+      frameLoop();
+
+    }catch(err){
+      hintEl.style.display='flex';
+      hintEl.textContent = 'Camera access denied or unavailable. Click below to retry.';
+      setStatus('No camera');
+    }
+  }
+
+  scrubToFrame(1);
+  initHandTracking();
+})();
+</script>
+
+</body>
+</html>
