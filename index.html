@@ -176,6 +176,23 @@
     filter:grayscale(15%) contrast(1.05);
   }
 
+  .tap-fallback{
+    display:none;
+    position:absolute;
+    inset:0;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    color:rgba(255,255,255,0.85);
+    background:rgba(0,0,0,0.35);
+    z-index:15;
+    cursor:pointer;
+  }
+
   /* ---------- FLOATING CAMERA WINDOW ---------- */
   .cam-wrap{
     position:absolute;
@@ -394,6 +411,7 @@
   <!-- VIDEO REEL -->
   <div class="reel-wrap" id="reelWrap">
     <video id="reelVideo" src="derek-reel.mp4" muted playsinline webkit-playsinline autoplay preload="auto"></video>
+    <div class="tap-fallback" id="tapFallback">Tap anywhere to start the reel</div>
   </div>
 
   <!-- HERO TEXT -->
@@ -472,31 +490,65 @@
   // hand plays the clip forward or in reverse like a film reel.
   const TOTAL_FRAMES = 97;
   const FPS = 24;
+  reel.muted = true;
+  reel.defaultMuted = true;
   reel.pause();
 
-  // Many mobile browsers (iOS Safari, Chrome for Android) never decode or
-  // paint a single frame from a <video> until playback has actually
-  // started — setting currentTime alone leaves it blank/black. Priming
-  // with a play() immediately followed by pause() forces that first
-  // decode. Muted + playsinline videos are allowed to autoplay without a
-  // user gesture, but we also retry on the first touch/click as a
-  // fallback for stricter browsers.
+  // Many mobile browsers (iOS Safari especially) never decode or paint a
+  // single frame from a <video> until playback has genuinely started —
+  // setting currentTime alone leaves it blank/black. We prime it with a
+  // play() immediately followed by pause(). Muted + playsinline videos are
+  // *supposed* to be allowed to autoplay without a gesture, but iOS Safari
+  // is inconsistent about this in practice, so we retry repeatedly and
+  // also surface a visible "tap to start" fallback the moment we detect
+  // priming hasn't succeeded yet, guaranteeing a real user gesture is
+  // available to satisfy stricter autoplay policies.
   let primed = false;
+  let primeAttempts = 0;
+
   function primeReel(){
     if(primed) return;
+    primeAttempts++;
     const p = reel.play();
     if(p && typeof p.then === 'function'){
       p.then(()=>{
         primed = true;
         reel.pause();
+        hideTapFallback();
         scrubToFrame(1);
-      }).catch(()=>{ /* will retry on first user gesture */ });
+      }).catch(()=>{
+        // Blocked by autoplay policy — keep the tap fallback visible so a
+        // real user gesture can unlock it.
+        if(primeAttempts >= 2) showTapFallback();
+      });
+    } else if(primeAttempts >= 2){
+      showTapFallback();
     }
   }
+
+  const tapFallbackEl = document.getElementById('tapFallback');
+  function showTapFallback(){
+    if(primed || !tapFallbackEl) return;
+    tapFallbackEl.style.display = 'flex';
+  }
+  function hideTapFallback(){
+    if(tapFallbackEl) tapFallbackEl.style.display = 'none';
+  }
+
   if(reel.readyState >= 2){ primeReel(); }
   else { reel.addEventListener('loadeddata', primeReel, { once:true }); }
+  // Retry priming a few times shortly after load in case the first
+  // attempt raced ahead of the browser being ready to allow autoplay.
+  [300, 900, 2000].forEach((delay)=> setTimeout(primeReel, delay));
   ['touchstart','click'].forEach((evt)=>{
-    document.addEventListener(evt, primeReel, { once:true, passive:true });
+    document.addEventListener(evt, primeReel, { passive:true });
+  });
+  if(tapFallbackEl){
+    tapFallbackEl.addEventListener('click', primeReel);
+    tapFallbackEl.addEventListener('touchstart', primeReel, { passive:true });
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible') primeReel();
   });
 
   // The hand-tracking loop can call this many times per second. Firing a
@@ -504,22 +556,29 @@
   // makes some browsers abort the pending seek before it ever paints a
   // frame, so the video looks frozen. We only ever have one seek in
   // flight, and always jump straight to the most recently requested frame
-  // once it completes.
+  // once it completes. Safari can occasionally fail to fire 'seeked' at
+  // all during rapid re-seeking, so a safety timeout also clears the lock
+  // to guarantee we never get stuck holding a stale pending frame.
   let seekInFlight = false;
   let pendingTime = null;
+  let seekWatchdog = null;
 
-  reel.addEventListener('seeked', ()=>{
+  function onSeekSettled(){
+    clearTimeout(seekWatchdog);
     seekInFlight = false;
     if(pendingTime !== null){
       const t = pendingTime;
       pendingTime = null;
       applySeek(t);
     }
-  });
+  }
+  reel.addEventListener('seeked', onSeekSettled);
 
   function applySeek(time){
     seekInFlight = true;
     reel.currentTime = time;
+    clearTimeout(seekWatchdog);
+    seekWatchdog = setTimeout(onSeekSettled, 250);
   }
 
   function scrubToFrame(frameFloat){
